@@ -13,6 +13,8 @@ import { busRoute } from "./Modules/Bus/busController.js";
 import routeRoute from "./Modules/Route/RouteController.js";
 import { busScheduleRoute } from "./Modules/Bus/BusSchedule/busScheduleController.js";
 import { busLayoutRoute } from "./Modules/Bus/BusLayout/busLayoutController.js";
+
+
   
 
 
@@ -44,6 +46,7 @@ app.use('/route', routeRoute);
 app.use('/booking', bookingRoute);
 app.use('/bus/schedule', busScheduleRoute);
 app.use('/bus/layout', busLayoutRoute); // Note: busRoute handles layout as well
+app.use('/payment',paymentRoute)
 
 app.listen(port, () => {
   console.log(`🚀 Server running on http://localhost:${port}`);
