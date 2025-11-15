@@ -7,7 +7,7 @@ import { authMiddleware } from "./Middleware/auth.js";
 import passport from "passport";
 import './Config/passport.js';
 import { profileRoute } from "./Modules/Profile/profileController.js";
-import { paymentRoute } from "./Modules/Payment/paymentController.js";
+// import { paymentRoute } from "./Modules/Payment/paymentController.js";
 import { bookingRoute } from "./Modules/Booking/bookingController.js";
 import { busRoute } from "./Modules/Bus/busController.js";
 import routeRoute from "./Modules/Route/RouteController.js";
@@ -40,13 +40,13 @@ app.use(authMiddleware);
 // all route
 app.use('/', authRoutes);
 app.use('/profile', profileRoute);
-app.use('/payment', paymentRoute);
+// app.use('/payment', paymentRoute);
 app.use('/bus', busRoute);
 app.use('/route', routeRoute);
 app.use('/booking', bookingRoute);
 app.use('/bus/schedule', busScheduleRoute);
 app.use('/bus/layout', busLayoutRoute); // Note: busRoute handles layout as well
-app.use('/payment',paymentRoute)
+// app.use('/payment',paymentRoute)
 
 app.listen(port, () => {
   console.log(`🚀 Server running on http://localhost:${port}`);

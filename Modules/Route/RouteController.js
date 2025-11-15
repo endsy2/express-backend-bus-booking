@@ -3,10 +3,10 @@ import { getAllRoutes, getAllBuses, getRoute, createRoute, updateRoute, deleteRo
 
 const routeRoute = Router();
 
+routeRoute.post('/createRoute', createRoute);//testing
 routeRoute.get('/', getAllRoutes);
 routeRoute.get('/:id', getRoute);
-routeRoute.post('/', createRoute);//testing
-routeRoute.put('/:id', updateRoute);//testing
-routeRoute.delete('/:id', deleteRoute);//testing
+routeRoute.put('/update/:id', updateRoute);//testing
+routeRoute.delete('/delete/:id', deleteRoute);//testing
 
 export default routeRoute;

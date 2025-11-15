@@ -4,6 +4,6 @@ const busLayoutRoute = Router();
 busLayoutRoute.get('/getall/', getAllLayouts);
 busLayoutRoute.get('/:id', getLayout);
 busLayoutRoute.post('/', createLayout);
-busLayoutRoute.put('/:id', updateLayout);
-busLayoutRoute.delete('/:id', deleteLayout);
+busLayoutRoute.put('/:id', updateLayout);//testing  
+busLayoutRoute.delete('/:id', deleteLayout);//testing
 export { busLayoutRoute };

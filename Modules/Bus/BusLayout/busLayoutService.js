@@ -15,7 +15,10 @@ export const getAllLayouts = async (req, res) => {
 export const getLayout = async (req, res) => {
   const id = parseInt(req.params.id);
   try {
-    const layout = await prisma.busLayout.findUnique({ where: { id }, include: { bus: true } });
+    if(!id){
+    return res.status(400).json({message:'input id'})
+    }
+    const layout = await prisma.busLayout.findUnique({ where: { id } });
     if (!layout) return res.status(404).json({ message: "Layout not found" });
     res.json(layout);
   } catch (error) {
