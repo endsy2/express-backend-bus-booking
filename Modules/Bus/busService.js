@@ -173,3 +173,123 @@ export const deleteBus = async (req, res) => {
       res.status(500).json({ error: "Internal server error" });
   }
 };
+
+export const getBySchedule = async (req, res) => {
+  try {
+    const { departureDate, returnDate, destination } = req.body;
+
+    // Validate input
+    if (!departureDate || !destination) {
+      return res.status(400).json({ 
+        error: "departureDate and destination are required" 
+      });
+    }
+
+    // Convert to UTC midnight
+    const departureDateToDate = new Date(departureDate);
+    departureDateToDate.setUTCHours(0, 0, 0, 0);
+
+    // 1️⃣ Fetch bus schedules
+    const busBySchedule = await prisma.busSchedule.findMany({
+      where: {
+        departureDate: departureDateToDate,
+        bus: {
+          route: {
+            destination: destination,
+          },
+        },
+      },
+      include: {
+        bus: {
+          include: {
+            route: true,
+          },
+        },
+      },
+    });
+
+    // If no schedules found, return early
+    if (busBySchedule.length === 0) {
+      return res.json({
+        message: "No schedules found",
+        data: [],
+        count: 0
+      });
+    }
+
+    // 2️⃣ Get schedule IDs for batch query
+    const scheduleIds = busBySchedule.map(s => s.id);
+
+    // 3️⃣ Get booked/locked seats count per schedule (only one query needed!)
+    const booked = await prisma.booking.groupBy({
+      by: ['scheduleId'],
+      where: {
+        scheduleId: {
+          in: scheduleIds
+        },
+        bookingStatus: {
+          in: ['CONFIRMED']
+        }
+      },
+      _count: {
+        id: true
+      }
+    });
+
+    // 4️⃣ Create lookup map for O(1) access
+    const bookedSeatMap = new Map(
+      booked.map(bs => [bs.scheduleId, bs._count.id])
+    );
+
+    // 5️⃣ Combine data efficiently
+    const busesWithSeatCount = busBySchedule.map((schedule) => {
+      const totalSeats = schedule.bus.totalSeats; // ✅ Use from Bus model
+      const booked = bookedSeatMap.get(schedule.id) || 0;
+      const available = totalSeats - booked;
+
+      return {
+        id: schedule.id,
+        busId: schedule.busId,
+        departureTime: schedule.departureTime,
+        arrivalTime: schedule.arrivalTime,
+        departureDate: schedule.departureDate,
+        price: schedule.price,
+        bus: {
+          id: schedule.bus.id,
+          busNumber: schedule.bus.busNumber,
+          busType: schedule.bus.busType,
+          totalSeats: totalSeats,
+          availableSeats: available,
+          bookedSeats: booked,
+          route: {
+            id: schedule.bus.route.id,
+            origin: schedule.bus.route.origin,
+            destination: schedule.bus.route.destination,
+            distanceKm: schedule.bus.route.distanceKm,
+            durationMinutes: schedule.bus.route.durationMinutes,
+          }
+        },
+      };
+    });
+
+    // 6️⃣ Sort by available seats (most available first)
+    busesWithSeatCount.sort((a, b) => b.bus.availableSeats - a.bus.availableSeats);
+
+    return res.json({
+      message: "Successfully retrieved schedules",
+      data: busesWithSeatCount,
+      count: busesWithSeatCount.length,
+      summary: {
+        totalSchedules: busesWithSeatCount.length,
+        totalAvailableSeats: busesWithSeatCount.reduce((sum, s) => sum + s.bus.availableSeats, 0),
+        totalBookedSeats: busesWithSeatCount.reduce((sum, s) => sum + s.bus.bookedSeats, 0),
+      }
+    });
+  } catch (error) {
+    console.error("Error get bus:", error);
+    res.status(500).json({ 
+      error: "Internal server error",
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+};
