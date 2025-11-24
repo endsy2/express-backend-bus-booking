@@ -177,20 +177,49 @@ export const deleteBus = async (req, res) => {
 export const getBySchedule = async (req, res) => {
   try {
     const { departureDate, returnDate, destination } = req.body;
-
+   
     // Validate input
     if (!departureDate || !destination) {
       return res.status(400).json({ 
         error: "departureDate and destination are required" 
       });
     }
+    
 
     // Convert to UTC midnight
     const departureDateToDate = new Date(departureDate);
     departureDateToDate.setUTCHours(0, 0, 0, 0);
-
+    var busBySchedule;
+   
     // 1️⃣ Fetch bus schedules
-    const busBySchedule = await prisma.busSchedule.findMany({
+    if(returnDate){
+      const returnDateToDate=new Date(returnDate);
+      returnDateToDate.setUTCHours(0,0,0,0)
+      var busBySchedule = await prisma.busSchedule.findMany({
+      where: {
+        departureDate: {
+          gte:departureDateToDate,
+          lte:returnDateToDate
+        },
+        bus: {
+          route: {
+            destination: destination,
+          },
+        },
+      },
+      include: {
+        bus: {
+          include: {
+            route: true,
+          },
+        },
+      },
+    });
+    }
+    else {
+      // return res.json(returnDateToDate)
+      
+      var busBySchedule = await prisma.busSchedule.findMany({
       where: {
         departureDate: departureDateToDate,
         bus: {
@@ -207,7 +236,10 @@ export const getBySchedule = async (req, res) => {
         },
       },
     });
-
+    return res.json(busBySchedule)
+    }
+    
+    
     // If no schedules found, return early
     if (busBySchedule.length === 0) {
       return res.json({
