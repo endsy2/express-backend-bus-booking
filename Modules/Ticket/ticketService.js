@@ -16,7 +16,6 @@ try {
     res.status(500).json({message:"Failed to fetch tickets"})
 }
 }
-
 export const TicketByUserPast=async(req,res)=>{
     try {
         const userId=req.user.id;
@@ -38,13 +37,66 @@ export const getTicketDetails=async(req,res)=>{
         const ticketId=parseInt(req.params.id);
         const ticket=await prisma.ticket.findUnique({
             where:{id:ticketId},
-            include:{busSchedule:true,bookingSeats:{include:{busSeat:true}}}
+            include:{
+                booking:{
+                    include:{
+                        schedule:{
+                            include:{
+                                bus:{
+                                    include:{
+                                        route:true
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
         })
         if(!ticket){
             return res.status(404).json({message:"Ticket not found"})
         }
         res.json(ticket);
     } catch (error) {
+        console.log(error);
         res.status(500).json({message:"Failed to fetch ticket details"})
     }
 }
+export const getTicket = async (req, res) => {
+  const userId = req.user?.id;
+  const { type } = req.query;
+
+  let dateFilter = {};
+
+  if (type === "pass") {
+    dateFilter = { lt: dayjs().toDate() };
+  } else {
+    dateFilter = { gte: dayjs().toDate() };
+  }
+
+  const tickets = await prisma.ticket.findMany({
+    where: {
+      issuedAt: dateFilter,
+      booking: {
+        userId: userId    
+      }
+    },
+    include: {
+      booking: {
+        select: {
+          paymentStatus: true,
+          bookingStatus: true
+        }
+      }
+    }
+  });
+
+  if (!tickets || tickets.length === 0) {
+    return res.status(404).json({ message: "No tickets found" });
+  }
+
+  return res.status(200).json({
+    data: tickets,
+  });
+};

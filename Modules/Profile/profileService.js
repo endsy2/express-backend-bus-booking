@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import dayjs from "dayjs";
 
 const prisma=new PrismaClient();
 
@@ -30,7 +31,7 @@ export const updateProfile = async (req, res) => {
     const updatedProfile = await prisma.user.upsert({
       where: { id: userId },
       update: { fullname, phone, address, image },
-      create: { id: userId, fullname, phone, address, image }, // include id for create
+      create: { id: userId, fullname, phone, address, image }, 
     });
 
     return res.json({ message: "Profile Updated", profile: updatedProfile });
@@ -39,3 +40,4 @@ export const updateProfile = async (req, res) => {
     return res.status(500).json({ error: "Failed To Update Profile" });
   }
 };
+
