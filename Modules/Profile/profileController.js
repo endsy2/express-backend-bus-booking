@@ -1,5 +1,5 @@
 import express, { Router } from 'express'
-import { getProfile, getTicket, updateProfile } from './profileService.js';
+import { getProfile, updateProfile } from './profileService.js';
 import upload from '../../utils/upload.js';
 
 export const profileRoute=Router();
