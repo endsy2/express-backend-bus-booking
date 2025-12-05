@@ -53,11 +53,11 @@ export const busSeatAndLayout = async (req, res) => {
     }));
 
     // 4️⃣ Combine into final response
-    return res.json({
+    return res.status(200).json({data: {
       message: "Bus layout and seat info loaded successfully",
       layout: busLayout,
       seats: seatsWithAvailability
-    });
+    }});
 
   } catch (error) {
     console.error("Error:", error);

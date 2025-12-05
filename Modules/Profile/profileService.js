@@ -13,7 +13,7 @@ export const getProfile=async(req,res)=>{
         if(!profile){
             return res.status(404).json({error:"Profile not found"})
         }
-        res.json({profile})
+        res.status(200).json({data: profile})
     } catch (error) {
         res.status(500).json({error:"Failed to fetch profile"})
     }
@@ -34,7 +34,7 @@ export const updateProfile = async (req, res) => {
       create: { id: userId, fullname, phone, address, image }, 
     });
 
-    return res.json({ message: "Profile Updated", profile: updatedProfile });
+    return res.status(200).json({data: { message: "Profile Updated", profile: updatedProfile }});
   } catch (error) {
     console.error("Error updating profile:", error);
     return res.status(500).json({ error: "Failed To Update Profile" });

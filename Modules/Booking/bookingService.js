@@ -87,7 +87,7 @@ export const bookSeats = async (req, res) => {
       });
     }
 
-    res.status(201).json({ message: 'Booking successful', booking });
+    res.status(200).json({data: { message: 'Booking successful', booking }});
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error', error: err.message });
@@ -124,7 +124,7 @@ export const cancelBooking = async (req, res) => {
       data: { bookingStatus: 'CANCELLED', paymentStatus: 'FAILED' },
     });
 
-    res.json({ message: 'Booking cancelled and seats released' });
+    res.status(200).json({data: { message: 'Booking cancelled and seats released' }});
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error', error: err.message });

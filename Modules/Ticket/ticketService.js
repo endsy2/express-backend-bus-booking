@@ -11,7 +11,7 @@ try {
     if(tickets.length===0){
         return res.status(404).json({message:"No pending tickets found"})
     }
-    res.json(tickets);
+    res.status(200).json({data: tickets});
 } catch (error) {
     res.status(500).json({message:"Failed to fetch tickets"})
 }
@@ -26,7 +26,7 @@ export const TicketByUserPast=async(req,res)=>{
         if(tickets.length===0){
             return res.status(404).json({message:"No past tickets found"})
         }
-        res.json(tickets);
+        res.status(200).json({data: tickets});
     } catch (error) {
         res.status(500).json({message:"Failed to fetch tickets"})
     }
@@ -57,7 +57,7 @@ export const getTicketDetails=async(req,res)=>{
         if(!ticket){
             return res.status(404).json({message:"Ticket not found"})
         }
-        res.json(ticket);
+        res.status(200).json({data: ticket});
     } catch (error) {
         console.log(error);
         res.status(500).json({message:"Failed to fetch ticket details"})

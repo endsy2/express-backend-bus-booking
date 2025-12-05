@@ -5,7 +5,7 @@ const prisma = new PrismaClient();
 export const getAllLayouts = async (req, res) => {
   try {
     const layouts = await prisma.busLayout.findMany();
-    res.json(layouts);
+    res.status(200).json({data: layouts});
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Failed to fetch layouts" });
@@ -20,7 +20,7 @@ export const getLayout = async (req, res) => {
     }
     const layout = await prisma.busLayout.findUnique({ where: { id } });
     if (!layout) return res.status(404).json({ message: "Layout not found" });
-    res.json(layout);
+    res.status(200).json({data: layout});
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Failed to fetch layout" });
@@ -37,7 +37,7 @@ export const createLayout = async (req, res) => {
       }
     });
     console.log(newLayout); // will contain id
-    res.status(201).json(newLayout);
+    res.status(200).json({data: newLayout});
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Failed to create layout" });
@@ -56,7 +56,7 @@ export const updateLayout = async (req, res) => {
       where: { id },
       data: { layout },
     });
-    res.json(updatedLayout);
+    res.status(200).json({data: updatedLayout});
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Failed to update layout" });
@@ -71,7 +71,7 @@ export const deleteLayout = async (req, res) => {
     if (!existingLayout) return res.status(404).json({ message: "Layout not found" });
 
     await prisma.busLayout.delete({ where: { id } });
-    res.json({ message: "Layout deleted" });
+    res.status(200).json({data: { message: "Layout deleted" }});
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Failed to delete layout" });

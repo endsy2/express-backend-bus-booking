@@ -18,7 +18,7 @@ export const register = async (req, res) => {
       data: { fullName, email, passwordHash: hashedPassword }
     });
     const accessToken=generateToken(user)
-    res.status(201).json({ message: "User registered", user, accessToken });
+    res.status(200).json({data: { message: "User registered", user, accessToken }});
     // res.json({ message: "User registered", user });
   } catch (err) {
     res.status(400).json({ error: err.message });
@@ -36,7 +36,7 @@ export const login = async (req, res) => {
     if (!valid) return res.status(401).json({ error: "Invalid password" });
 
     const token = generateToken(user);
-    res.json({ token });
+    res.status(200).json({data: { token }});
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
@@ -44,9 +44,9 @@ export const login = async (req, res) => {
 
 export const googleCallback = (req, res) => {
   const token = generateToken(req.user);
-  res.json({ token });
+  res.status(200).json({data: { token }});
 };
 
 export const protectedRoute = (req, res) => {
-  res.json({ message: "You are authenticated", user: req.user });
+  res.status(200).json({data: { message: "You are authenticated", user: req.user }});
 };

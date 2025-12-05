@@ -16,7 +16,7 @@ export const getBusLayoutWithSeats = async (req, res) => {
 
     if (!bus) return res.status(404).json({ message: "Bus not found" });
 
-    res.json({
+    res.status(200).json({data: {
       layout: bus.layout?.layout || [], // JSON layout array
       seats: bus.seats.map(seat => ({
         id: seat.id,
@@ -25,7 +25,7 @@ export const getBusLayoutWithSeats = async (req, res) => {
         status: seat.status,
         positionLabel: seat.positionLabel,
       })),
-    });
+    }});
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Failed to fetch bus layout" });
@@ -52,7 +52,7 @@ const buses=await prisma.bus.findMany({
   },
   include: { route: true, schedules: true, layout: true }
 });
-res.status(200).json(buses);
+res.status(200).json({data: buses});
 } catch (error) {
   res.status(500).json({ message: "Failed to fetch bus with time" });
 }
@@ -62,7 +62,7 @@ res.status(200).json(buses);
 export const getAllBuses = async (req, res) => {
     try {
           const buses = await prisma.bus.findMany({ include: { route: true, schedules: true, layout: true ,seats:true} });
-        res.json(buses);
+        res.status(200).json({data: buses});
     } catch (error) {
       console.error("Error fetching buses:", error);
       res.status(500).json({ error: "Internal server error" });
@@ -78,7 +78,7 @@ export const getBus = async (req, res) => {
     include: {  seats:true, route: true, schedules: true, layout: true } 
   });
   if (!bus) return res.status(404).json({ message: "Bus not found" });
-    res.json(bus);
+    res.status(200).json({data: bus});
  } catch (error) {
    console.error("Error fetching bus:", error);
    res.status(500).json({ error: "Internal server error" });
@@ -138,7 +138,7 @@ export const createBus = async (req, res) => {
       }
     }
 
-    res.status(201).json({ bus, message: "Bus and layout created successfully" });
+    res.status(200).json({data: { bus, message: "Bus and layout created successfully" }});
   } catch (error) {
     console.error("Error creating bus:", error);
     res.status(500).json({ error: "Internal server error" });
@@ -156,7 +156,7 @@ export const updateBus = async (req, res) => {
             where: { id },
             data: { routeId, busNumber, busType, totalSeats, operatorName },
         });
-        res.json(bus);
+        res.status(200).json({data: bus});
     } catch (error) {
         console.error("Error updating bus:", error);
         res.status(500).json({ error: "Internal server error" });
@@ -167,7 +167,7 @@ export const deleteBus = async (req, res) => {
   try {
       const id = parseInt(req.params.id);
       await prisma.bus.delete({ where: { id } });
-      res.json({ message: "Bus deleted" });
+      res.status(200).json({data: { message: "Bus deleted" }});
   } catch (error) {
       console.error("Error deleting bus:", error);
       res.status(500).json({ error: "Internal server error" });
@@ -236,17 +236,17 @@ export const getBySchedule = async (req, res) => {
         },
       },
     });
-    return res.json(busBySchedule)
+    return res.status(200).json({data: busBySchedule})
     }
     
     
     // If no schedules found, return early
     if (busBySchedule.length === 0) {
-      return res.json({
+      return res.status(200).json({data: {
         message: "No schedules found",
         data: [],
         count: 0
-      });
+      }});
     }
 
     // 2️⃣ Get schedule IDs for batch query
@@ -307,7 +307,7 @@ export const getBySchedule = async (req, res) => {
     // 6️⃣ Sort by available seats (most available first)
     busesWithSeatCount.sort((a, b) => b.bus.availableSeats - a.bus.availableSeats);
 
-    return res.json({
+    return res.status(200).json({data: {
       message: "Successfully retrieved schedules",
       data: busesWithSeatCount,
       count: busesWithSeatCount.length,
@@ -316,7 +316,7 @@ export const getBySchedule = async (req, res) => {
         totalAvailableSeats: busesWithSeatCount.reduce((sum, s) => sum + s.bus.availableSeats, 0),
         totalBookedSeats: busesWithSeatCount.reduce((sum, s) => sum + s.bus.bookedSeats, 0),
       }
-    });
+    }});
   } catch (error) {
     console.error("Error get bus:", error);
     res.status(500).json({ 
