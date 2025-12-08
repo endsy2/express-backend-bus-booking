@@ -177,7 +177,7 @@ export const deleteBus = async (req, res) => {
 export const getBySchedule = async (req, res) => {
   try {
     const { departureDate, returnDate, } = req.query;
-    const {}=req.params;
+    const {destinationId}=req.params;
     console.log(destinationId);
     console.log(departureDate)
     
