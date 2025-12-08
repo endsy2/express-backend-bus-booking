@@ -32,31 +32,31 @@ export const getBusLayoutWithSeats = async (req, res) => {
   }
 };
 
-export const getbusdestandtime = async (req, res) => {
-try {
-const { origin, destination,departureTime,returnTime } = req.body;
-const buses=await prisma.bus.findMany({
-  where: {
-    route: {
-      origin: origin,
-      destination: destination,
-    },
-    schedules: {
-      some: {
-        departureTime: {
-          gte: new Date(departureTime),
-          lte: new Date(returnTime)
-        }
-      }
-    }
-  },
-  include: { route: true, schedules: true, layout: true }
-});
-res.status(200).json({data: buses});
-} catch (error) {
-  res.status(500).json({ message: "Failed to fetch bus with time" });
-}
-}
+// export const getbusdestandtime = async (req, res) => {
+// try {
+// const { origin, destination,departureTime,returnTime } = req.query;
+// const buses=await prisma.bus.findMany({
+//   where: {
+//     route: {
+//       origin: origin,
+//       destination: destination,
+//     },
+//     schedules: {
+//       some: {
+//         departureTime: {
+//           gte: new Date(departureTime),
+//           lte: new Date(returnTime)
+//         }
+//       }
+//     }
+//   },
+//   include: { route: true, schedules: true, layout: true }
+// });
+// res.status(200).json({data: buses});
+// } catch (error) {
+//   res.status(500).json({ message: "Failed to fetch bus with time" });
+// }
+// }
 
 
 export const getAllBuses = async (req, res) => {
@@ -176,10 +176,13 @@ export const deleteBus = async (req, res) => {
 
 export const getBySchedule = async (req, res) => {
   try {
-    const { departureDate, returnDate, destination } = req.body;
-   
+    const { departureDate, returnDate, } = req.query;
+    const {}=req.params;
+    console.log(destinationId);
+    console.log(departureDate)
+    
     // Validate input
-    if (!departureDate || !destination) {
+    if (!departureDate || !destinationId) {
       return res.status(400).json({ 
         error: "departureDate and destination are required" 
       });
@@ -203,7 +206,7 @@ export const getBySchedule = async (req, res) => {
         },
         bus: {
           route: {
-            destination: destination,
+            id: parseInt(destinationId),
           },
         },
       },
@@ -224,7 +227,7 @@ export const getBySchedule = async (req, res) => {
         departureDate: departureDateToDate,
         bus: {
           route: {
-            destination: destination,
+            id: parseInt(destinationId),
           },
         },
       },
@@ -236,9 +239,10 @@ export const getBySchedule = async (req, res) => {
         },
       },
     });
-    return res.status(200).json({data: busBySchedule})
+    return res.status(200).json({data: busBySchedule,"message":"not found"})
     }
     
+    console.log("hello");
     
     // If no schedules found, return early
     if (busBySchedule.length === 0) {
@@ -251,6 +255,8 @@ export const getBySchedule = async (req, res) => {
 
     // 2️⃣ Get schedule IDs for batch query
     const scheduleIds = busBySchedule.map(s => s.id);
+
+    
 
     // 3️⃣ Get booked/locked seats count per schedule (only one query needed!)
     const booked = await prisma.booking.groupBy({

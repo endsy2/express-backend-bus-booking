@@ -5,8 +5,10 @@ const prisma=new PrismaClient();
 
 export const busSeatAndLayout = async (req, res) => {
   try {
-    const { scheduleId, busId } = req.body;
+    const scheduleId = parseInt(req.query.scheduleId);
+    const busId = parseInt(req.query.busId);
 
+    
     
     const busLayout = await prisma.bus.findUnique({
       where: { id: busId },

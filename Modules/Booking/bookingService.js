@@ -4,7 +4,7 @@ const prisma = new PrismaClient();
 export const bookSeats = async (req, res) => {
   try {
     const userId = req.user.id;
-    const { scheduleId, seatIds, promoCode } = req.body;
+    const { scheduleId, seatIds, promoCode } = req.query;
 
     // 1. Check if seats exist and are available
     const seats = await prisma.seat.findMany({
