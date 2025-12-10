@@ -16,16 +16,18 @@ export const getBusLayoutWithSeats = async (req, res) => {
 
     if (!bus) return res.status(404).json({ message: "Bus not found" });
 
-    res.status(200).json({data: {
-      layout: bus.layout?.layout || [], // JSON layout array
-      seats: bus.seats.map(seat => ({
-        id: seat.id,
-        seatNumber: seat.seatNumber,
-        price: seat.price,
-        status: seat.status,
-        positionLabel: seat.positionLabel,
-      })),
-    }});
+    res.status(200).json({
+      data: {
+        layout: bus.layout?.layout || [], // JSON layout array
+        seats: bus.seats.map(seat => ({
+          id: seat.id,
+          seatNumber: seat.seatNumber,
+          price: seat.price,
+          status: seat.status,
+          positionLabel: seat.positionLabel,
+        })),
+      }
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Failed to fetch bus layout" });
@@ -60,29 +62,29 @@ export const getBusLayoutWithSeats = async (req, res) => {
 
 
 export const getAllBuses = async (req, res) => {
-    try {
-          const buses = await prisma.bus.findMany({ include: { route: true, schedules: true, layout: true ,seats:true} });
-        res.status(200).json({data: buses});
-    } catch (error) {
-      console.error("Error fetching buses:", error);
-      res.status(500).json({ error: "Internal server error" });
-    }
+  try {
+    const buses = await prisma.bus.findMany({ include: { route: true, schedules: true, layout: true, seats: true } });
+    res.status(200).json({ data: buses });
+  } catch (error) {
+    console.error("Error fetching buses:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
 };
 
 
 export const getBus = async (req, res) => {
- try {
+  try {
     const id = parseInt(req.params.id);
-    const bus = await prisma.bus.findUnique({ 
-    where: { id }, 
-    include: {  seats:true, route: true, schedules: true, layout: true } 
-  });
-  if (!bus) return res.status(404).json({ message: "Bus not found" });
-    res.status(200).json({data: bus});
- } catch (error) {
-   console.error("Error fetching bus:", error);
-   res.status(500).json({ error: "Internal server error" });
- }
+    const bus = await prisma.bus.findUnique({
+      where: { id },
+      include: { seats: true, route: true, schedules: true, layout: true }
+    });
+    if (!bus) return res.status(404).json({ message: "Bus not found" });
+    res.status(200).json({ data: bus });
+  } catch (error) {
+    console.error("Error fetching bus:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
 };
 
 export const createBus = async (req, res) => {
@@ -138,7 +140,7 @@ export const createBus = async (req, res) => {
       }
     }
 
-    res.status(200).json({data: { bus, message: "Bus and layout created successfully" }});
+    res.status(200).json({ data: { bus, message: "Bus and layout created successfully" } });
   } catch (error) {
     console.error("Error creating bus:", error);
     res.status(500).json({ error: "Internal server error" });
@@ -146,117 +148,119 @@ export const createBus = async (req, res) => {
 };
 
 export const updateBus = async (req, res) => {
-    try {
-        const id = parseInt(req.params.id);
-        const routeId=await prisma.busRoute.findFirst({
-            where:{origin:req.body.origin,destination:req.body.destination}
-        }).then(route=>route.id)
-        const { busNumber, busType, totalSeats, operatorName } = req.body;
-        const bus = await prisma.bus.update({
-            where: { id },
-            data: { routeId, busNumber, busType, totalSeats, operatorName },
-        });
-        res.status(200).json({data: bus});
-    } catch (error) {
-        console.error("Error updating bus:", error);
-        res.status(500).json({ error: "Internal server error" });
-    }
+  try {
+    const id = parseInt(req.params.id);
+    const routeId = await prisma.busRoute.findFirst({
+      where: { origin: req.body.origin, destination: req.body.destination }
+    }).then(route => route.id)
+    const { busNumber, busType, totalSeats, operatorName } = req.body;
+    const bus = await prisma.bus.update({
+      where: { id },
+      data: { routeId, busNumber, busType, totalSeats, operatorName },
+    });
+    res.status(200).json({ data: bus });
+  } catch (error) {
+    console.error("Error updating bus:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
 };
 
 export const deleteBus = async (req, res) => {
   try {
-      const id = parseInt(req.params.id);
-      await prisma.bus.delete({ where: { id } });
-      res.status(200).json({data: { message: "Bus deleted" }});
+    const id = parseInt(req.params.id);
+    await prisma.bus.delete({ where: { id } });
+    res.status(200).json({ data: { message: "Bus deleted" } });
   } catch (error) {
-      console.error("Error deleting bus:", error);
-      res.status(500).json({ error: "Internal server error" });
+    console.error("Error deleting bus:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
 };
 
 export const getBySchedule = async (req, res) => {
   try {
     const { departureDate, returnDate, } = req.query;
-    const {destinationId}=req.params;
+    const { destinationId } = req.params;
     console.log(destinationId);
     console.log(departureDate)
-    
+
     // Validate input
     if (!departureDate || !destinationId) {
-      return res.status(400).json({ 
-        error: "departureDate and destination are required" 
+      return res.status(400).json({
+        error: "departureDate and destination are required"
       });
     }
-    
+
 
     // Convert to UTC midnight
     const departureDateToDate = new Date(departureDate);
     departureDateToDate.setUTCHours(0, 0, 0, 0);
     var busBySchedule;
-   
+
     // 1️⃣ Fetch bus schedules
-    if(returnDate){
-      const returnDateToDate=new Date(returnDate);
-      returnDateToDate.setUTCHours(0,0,0,0)
+    if (returnDate) {
+      const returnDateToDate = new Date(returnDate);
+      returnDateToDate.setUTCHours(0, 0, 0, 0)
       var busBySchedule = await prisma.busSchedule.findMany({
-      where: {
-        departureDate: {
-          gte:departureDateToDate,
-          lte:returnDateToDate
-        },
-        bus: {
-          route: {
-            id: parseInt(destinationId),
+        where: {
+          departureDate: {
+            gte: departureDateToDate,
+            lte: returnDateToDate
+          },
+          bus: {
+            route: {
+              id: parseInt(destinationId),
+            },
           },
         },
-      },
-      include: {
-        bus: {
-          include: {
-            route: true,
+        include: {
+          bus: {
+            include: {
+              route: true,
+            },
           },
         },
-      },
-    });
+      });
     }
     else {
       // return res.json(returnDateToDate)
-      
+
       var busBySchedule = await prisma.busSchedule.findMany({
-      where: {
-        departureDate: departureDateToDate,
-        bus: {
-          route: {
-            id: parseInt(destinationId),
+        where: {
+          departureDate: departureDateToDate,
+          bus: {
+            route: {
+              id: parseInt(destinationId),
+            },
           },
         },
-      },
-      include: {
-        bus: {
-          include: {
-            route: true,
+        include: {
+          bus: {
+            include: {
+              route: true,
+            },
           },
         },
-      },
-    });
-    return res.status(200).json({data: busBySchedule,"message":"not found"})
+      });
+      return res.status(200).json({ data: busBySchedule, "message": "not found" })
     }
-    
+
     console.log("hello");
-    
+
     // If no schedules found, return early
     if (busBySchedule.length === 0) {
-      return res.status(200).json({data: {
-        message: "No schedules found",
-        data: [],
-        count: 0
-      }});
+      return res.status(200).json({
+        data: {
+          message: "No schedules found",
+          data: [],
+          count: 0
+        }
+      });
     }
 
     // 2️⃣ Get schedule IDs for batch query
     const scheduleIds = busBySchedule.map(s => s.id);
 
-    
+
 
     // 3️⃣ Get booked/locked seats count per schedule (only one query needed!)
     const booked = await prisma.booking.groupBy({
@@ -313,19 +317,21 @@ export const getBySchedule = async (req, res) => {
     // 6️⃣ Sort by available seats (most available first)
     busesWithSeatCount.sort((a, b) => b.bus.availableSeats - a.bus.availableSeats);
 
-    return res.status(200).json({data: {
-      message: "Successfully retrieved schedules",
-      data: busesWithSeatCount,
-      count: busesWithSeatCount.length,
-      summary: {
-        totalSchedules: busesWithSeatCount.length,
-        totalAvailableSeats: busesWithSeatCount.reduce((sum, s) => sum + s.bus.availableSeats, 0),
-        totalBookedSeats: busesWithSeatCount.reduce((sum, s) => sum + s.bus.bookedSeats, 0),
+    return res.status(200).json({
+      data: {
+        // message: "Successfully retrieved schedules",
+        route: busesWithSeatCount,
+        count: busesWithSeatCount.length,
+        summary: {
+          totalSchedules: busesWithSeatCount.length,
+          totalAvailableSeats: busesWithSeatCount.reduce((sum, s) => sum + s.bus.availableSeats, 0),
+          totalBookedSeats: busesWithSeatCount.reduce((sum, s) => sum + s.bus.bookedSeats, 0),
+        }
       }
-    }});
+    });
   } catch (error) {
     console.error("Error get bus:", error);
-    res.status(500).json({ 
+    res.status(500).json({
       error: "Internal server error",
       details: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
