@@ -95,8 +95,6 @@ model BookingSeat {
   bookingId         Int
   seatId            Int
   passengerName     String?
-  passengerAge      Int?
-  passengerGender   Gender?
   passengerNumber String?
   booking           Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
   seat              Seat    @relation(fields: [seatId], references: [id], onDelete: Cascade)

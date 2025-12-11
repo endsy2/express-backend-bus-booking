@@ -4,8 +4,7 @@ const prisma = new PrismaClient();
 export const bookSeats = async (req, res) => {
   try {
     const userId = req.user.id;
-    const { scheduleId, seatIds, promoCode ,passengerName,passengerAgeStr,passengerNumber} = req.body;
-    const passengerAge=parseInt(passengerAgeStr)
+    const { scheduleId, seatIds, promoCode ,passengerNumber} = req.body;
 
 
     
@@ -89,8 +88,6 @@ const bookedSeatIds = unavailableSeats.filter(id => id !== null);
       data: seatIds.map(seatId => ({
         bookingId: booking.id,
         seatId,
-        passengerName,
-        passengerAge,
         passengerNumber
       })),
     });
