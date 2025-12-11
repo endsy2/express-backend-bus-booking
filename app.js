@@ -16,15 +16,10 @@ import { busLayoutRoute } from "./Modules/Bus/BusLayout/busLayoutController.js";
 import busSeatRoute from "./Modules/Bus/BusSeat.js/busSeatController.js";
 import ticketRouter from "./Modules/Ticket/ticketController.js";
 
-
-  
-
-
 config(); // Load environment variables
 
 const app = express();
 const port = process.env.PORT || 3000; 
-
 
 app.use(express.json());
 app.use(passport.initialize());
@@ -52,6 +47,6 @@ app.use('/bus/layout', busLayoutRoute); // Note: busRoute handles layout as well
 app.use('/bus/seat',busSeatRoute)
 app.use('/ticket',ticketRouter);
 
-app.listen(port, () => {
-  console.log(`🚀 Server running on http://localhost:${port}`);
+app.listen(port, "0.0.0.0", () => {
+  console.log(`🚀 Server running on http://192.168.1.5:${port}`);
 });

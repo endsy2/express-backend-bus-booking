@@ -4,7 +4,11 @@ const prisma = new PrismaClient();
 export const bookSeats = async (req, res) => {
   try {
     const userId = req.user.id;
-    const { scheduleId, seatIds, promoCode } = req.query;
+    const { scheduleId, seatIds, promoCode ,passengerName,passengerAgeStr,passengerNumber} = req.body;
+    const passengerAge=parseInt(passengerAgeStr)
+
+
+    
 
     // 1. Check if seats exist and are available
     const seats = await prisma.seat.findMany({
@@ -15,14 +19,37 @@ export const bookSeats = async (req, res) => {
       return res.status(400).json({ message: 'Some seats are invalid for this schedule' });
     }
 
-    const unavailableSeats = seats.filter(seat => seat.status !== 'AVAILABLE');
-    if (unavailableSeats.length > 0) {
+    const unavailableSeats = await Promise.all(
+    seatIds.map(async (seatId) => {
+    const seat = await prisma.bookingSeat.findFirst({
+      where: {
+        seatId: seatId,
+        booking: {
+          scheduleId: scheduleId,
+          bookingStatus: "CONFIRMED",
+        },
+      },
+    });
+    return seat ? seatId : null; 
+  })
+);
+
+
+const bookedSeatIds = unavailableSeats.filter(id => id !== null);
+
+    if (bookedSeatIds.length > 0) {
       return res.status(400).json({ message: 'Some seats are already booked' });
     }
-
+    const price =await prisma.busSchedule.findFirst({
+      where:{
+        id:scheduleId
+      }
+    })
     // 2. Calculate total price
-    let totalAmount = seats.reduce((sum, seat) => sum + (seat.price || 0), 0);
+    let totalAmount = seats.reduce((sum,seat) => sum + ( price.price|| 0), 0);
     let promoId = null;
+    console.log("total:",totalAmount);
+    
 
     // 3. Apply promo if provided
     if (promoCode) {
@@ -62,14 +89,17 @@ export const bookSeats = async (req, res) => {
       data: seatIds.map(seatId => ({
         bookingId: booking.id,
         seatId,
+        passengerName,
+        passengerAge,
+        passengerNumber
       })),
     });
 
     // 6. Update seat statuses
-    await prisma.seat.updateMany({
-      where: { id: { in: seatIds } },
-      data: { status: 'BOOKED' },
-    });
+    // await prisma.seat.updateMany({
+    //   where: { id: { in: seatIds } },
+    //   data: { status: 'BOOKED' },
+    // });
 
     // 7. Handle promo usage
     if (promoId) {
@@ -88,6 +118,7 @@ export const bookSeats = async (req, res) => {
     }
 
     res.status(200).json({data: { message: 'Booking successful', booking }});
+   
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error', error: err.message });
