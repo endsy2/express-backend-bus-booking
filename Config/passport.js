@@ -8,9 +8,21 @@ const prisma = new PrismaClient();
 // JWT Strategy
 passport.use(new JwtStrategy({
   jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-  secretOrKey: process.env.JWT_SECRET
-}, async (payload, done) => {
+  secretOrKey: process.env.JWT_SECRET,
+  passReqToCallback: true
+}, async (req, payload, done) => {
   try {
+    // Check if token is blacklisted
+    const token = ExtractJwt.fromAuthHeaderAsBearerToken()(req);
+    if (token) {
+      const blacklisted = await prisma.tokenBlacklist.findUnique({
+        where: { token }
+      });
+      if (blacklisted && blacklisted.expiresAt > new Date()) {
+        return done(null, false);
+      }
+    }
+
     const user = await prisma.user.findUnique({ where: { id: parseInt(payload.id) } });
     if (!user) return done(null, false);
     return done(null, user);

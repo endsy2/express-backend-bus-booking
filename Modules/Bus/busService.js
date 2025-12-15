@@ -190,6 +190,16 @@ export const getBySchedule = async (req, res) => {
       });
     }
 
+    // Fetch route information first
+    const routeInfo = await prisma.busRoute.findUnique({
+      where: { id: parseInt(destinationId) }
+    });
+
+    if (!routeInfo) {
+      return res.status(404).json({
+        error: "Route not found"
+      });
+    }
 
     // Convert to UTC midnight
     const departureDateToDate = new Date(departureDate);
@@ -222,8 +232,6 @@ export const getBySchedule = async (req, res) => {
       });
     }
     else {
-      // return res.json(returnDateToDate)
-
       var busBySchedule = await prisma.busSchedule.findMany({
         where: {
           departureDate: departureDateToDate,
@@ -241,17 +249,20 @@ export const getBySchedule = async (req, res) => {
           },
         },
       });
-      return res.status(200).json({ data: busBySchedule, "message": "not found" })
     }
 
-    console.log("hello");
-
-    // If no schedules found, return early
+    // If no schedules found, return early with route info
     if (busBySchedule.length === 0) {
       return res.status(200).json({
         data: {
-          message: "No schedules found",
-          data: [],
+          route: {
+            id: routeInfo.id,
+            origin: routeInfo.origin,
+            destination: routeInfo.destination,
+            distanceKm: routeInfo.distanceKm,
+            durationMinutes: routeInfo.durationMinutes,
+          },
+          schedules: [],
           count: 0
         }
       });
@@ -319,8 +330,14 @@ export const getBySchedule = async (req, res) => {
 
     return res.status(200).json({
       data: {
-        // message: "Successfully retrieved schedules",
-        route: busesWithSeatCount,
+        route: {
+          id: routeInfo.id,
+          origin: routeInfo.origin,
+          destination: routeInfo.destination,
+          distanceKm: routeInfo.distanceKm,
+          durationMinutes: routeInfo.durationMinutes,
+        },
+        schedules: busesWithSeatCount,
         count: busesWithSeatCount.length,
         summary: {
           totalSchedules: busesWithSeatCount.length,
