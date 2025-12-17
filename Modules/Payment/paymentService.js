@@ -1,3 +1,6 @@
+
+import { PrismaClient } from "@prisma/client";
+const prisma = new PrismaClient();
 // import {BakongKHQR, khqrData, IndividualInfo, MerchantInfo, SourceInfo} from "bakong-khqr";
 
 // export const paymentService = async (req, res) => {
@@ -57,3 +60,43 @@
 //     const isValid = BakongKHQR.(md5Hash);
 //     return res.json({isValid});
 // }
+export const insertPayment = async (req, res) => {
+  try {
+    const { bookingId, amount, method, transaction_id, status, paidAt } = req.body;
+    console.log("here");
+    
+    // 1. Validate required fields (optional but recommended)
+    if (!bookingId || !amount || !method || !transaction_id || !status || !paidAt) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+
+    // 2. Insert into database
+    const payment = await prisma.payment.create({
+      data: {
+        bookingId,
+        amount,
+        method,
+        transactionId: transaction_id,
+        status,
+        paidAt: new Date(paidAt) // ensure it's a Date object
+      },
+    });
+    await prisma.booking.update({
+      data:{
+        paymentStatus:"PAID"
+      },
+      where:{
+        id:bookingId
+      }
+    })
+
+    // 3. Return success response
+    return res.status(201).json({
+      message: "Payment inserted successfully",
+      payment,
+    });
+  } catch (error) {
+    console.error("Insert payment error:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
