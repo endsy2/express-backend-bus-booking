@@ -23,43 +23,43 @@ export const busSeatAndLayout = async (req, res) => {
       return res.status(404).json({ message: "Bus not found" });
     }
 
-    const busSeat = await prisma.seat.findMany({
-      where: { busId: busId },
+  const seats = await prisma.seat.findMany({
+  where: {
+    bus: {
+      schedules: {
+        some: {
+          id: scheduleId,
+        },
+      },
+    },
+  },
+  select: {
+    id: true,
+    seatNumber: true,
+    seatType: true,
+    bookingSeats: {
+      where: {
+        booking: {
+          scheduleId: scheduleId,
+          bookingStatus: "CONFIRMED",
+        },
+      },
       select: {
         id: true,
-        seatNumber: true,
-        busId: true,
-        bookingSeats: {
-          where: {
-            booking: {
-              scheduleId: scheduleId,      
-            }
-          },
-          select: {
-            booking: {
-              select: {
-                bookingStatus: true
-              }
-            }
-          }
-        }
-      }
-    });
+      },
+    },
+  },
+});
 
-    // 3️⃣ Flatten and mark availability
-    const seatsWithAvailability = busSeat.map(seat => ({
-      id: seat.id,
-      seatNumber: seat.seatNumber,
-      busId: seat.busId,
-      status: seat.bookingSeats.length > 0 ? "UNAVAILABLE" : "AVAILABLE"
-    }));
 
-    // 4️⃣ Combine into final response
-    return res.status(200).json({data: {
-      message: "Bus layout and seat info loaded successfully",
-      layout: busLayout,
-      seats: seatsWithAvailability
-    }});
+const result = seats.map(seat => ({
+  id: seat.id,
+  seatNumber: seat.seatNumber,
+  seatType: seat.seatType,
+  status: seat.bookingSeats.length > 0 ? "BOOKED" : "AVAILABLE",
+}));
+    
+   return res.status(200).json({data:result});
 
   } catch (error) {
     console.error("Error:", error);

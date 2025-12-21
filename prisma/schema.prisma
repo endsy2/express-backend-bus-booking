@@ -93,8 +93,8 @@ model Seat {
 model BookingSeat {
   id                Int     @id @default(autoincrement())
   bookingId         Int
-  seatId            Int
-  passengerName     String?
+  seatId            Int     
+  // passengerName     String?
   passengerNumber String?
   booking           Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
   seat              Seat    @relation(fields: [seatId], references: [id], onDelete: Cascade)
@@ -202,7 +202,7 @@ enum BookingStatus {
 }
 
 enum PaymentStatus {
-  PENDING
+  PENDING 
   PAID
   FAILED
 }
