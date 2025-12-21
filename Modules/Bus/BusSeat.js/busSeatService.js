@@ -59,7 +59,7 @@ const result = seats.map(seat => ({
   status: seat.bookingSeats.length > 0 ? "BOOKED" : "AVAILABLE",
 }));
     
-   return res.status(200).json({data:result});
+   return res.status(200).json({data:result,layout:busLayout});
 
   } catch (error) {
     console.error("Error:", error);
