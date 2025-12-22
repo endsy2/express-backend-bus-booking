@@ -140,11 +140,11 @@ export const cancelBooking = async (req, res) => {
     }
 
     // 2. Release seats
-    const seatIds = booking.bookingSeats.map(bs => bs.seatId);
-    await prisma.seat.updateMany({
-      where: { id: { in: seatIds } },
-      data: { status: 'AVAILABLE' },
-    });
+    // const seatIds = booking.bookingSeats.map(bs => bs.seatId);
+    // await prisma.seat.updateMany({
+    //   where: { id: { in: seatIds } },
+    //   data: { status: 'AVAILABLE' },
+    // });
 
     // 3. Update booking status
     await prisma.booking.update({
