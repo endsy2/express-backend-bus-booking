@@ -4,10 +4,10 @@ const prisma = new PrismaClient();
 export const bookSeats = async (req, res) => {
   try {
     const userId = req.user.id;
-    const { scheduleId, seatIds, promoCode ,passengerNumber} = req.body;
+    const { scheduleId, seatIds, promoCode, passengerNumber } = req.body;
 
 
-    
+
 
     // 1. Check if seats exist and are available
     const seats = await prisma.seat.findMany({
@@ -19,36 +19,36 @@ export const bookSeats = async (req, res) => {
     }
 
     const unavailableSeats = await Promise.all(
-    seatIds.map(async (seatId) => {
-    const seat = await prisma.bookingSeat.findFirst({
-      where: {
-        seatId: seatId,
-        booking: {
-          scheduleId: scheduleId,
-          bookingStatus: "CONFIRMED",
-        },
-      },
-    });
-    return seat ? seatId : null; 
-  })
-);
+      seatIds.map(async (seatId) => {
+        const seat = await prisma.bookingSeat.findFirst({
+          where: {
+            seatId: seatId,
+            booking: {
+              scheduleId: scheduleId,
+              bookingStatus: "CONFIRMED",
+            },
+          },
+        });
+        return seat ? seatId : null;
+      })
+    );
 
 
-const bookedSeatIds = unavailableSeats.filter(id => id !== null);
+    const bookedSeatIds = unavailableSeats.filter(id => id !== null);
 
     if (bookedSeatIds.length > 0) {
       return res.status(400).json({ message: 'Some seats are already booked' });
     }
-    const price =await prisma.busSchedule.findFirst({
-      where:{
-        id:scheduleId
+    const price = await prisma.busSchedule.findFirst({
+      where: {
+        id: scheduleId
       }
     })
     // 2. Calculate total price
-    let totalAmount = seats.reduce((sum,seat) => sum + ( price.price|| 0), 0);
+    let totalAmount = seats.reduce((sum, seat) => sum + (price.price || 0), 0);
     let promoId = null;
-    console.log("total:",totalAmount);
-    
+    console.log("total:", totalAmount);
+
 
     // 3. Apply promo if provided
     if (promoCode) {
@@ -114,8 +114,8 @@ const bookedSeatIds = unavailableSeats.filter(id => id !== null);
       });
     }
 
-    res.status(200).json({data: { message: 'Booking successful', booking }});
-   
+    res.status(200).json({ data: { booking } });
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error', error: err.message });
@@ -152,7 +152,7 @@ export const cancelBooking = async (req, res) => {
       data: { bookingStatus: 'CANCELLED', paymentStatus: 'FAILED' },
     });
 
-    res.status(200).json({data: { message: 'Booking cancelled and seats released' }});
+    res.status(200).json({ data: { message: 'Booking cancelled and seats released' } });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error', error: err.message });

@@ -21,7 +21,7 @@ import { paymentRoute } from "./Modules/Payment/paymentController.js";
 config(); // Load environment variables
 
 const app = express();
-const port = process.env.PORT || 3000; 
+const port = process.env.PORT || 3000;
 
 app.use(express.json());
 app.use(passport.initialize());
@@ -45,10 +45,10 @@ app.use('/route', routeRoute);
 app.use('/booking', bookingRoute);
 app.use('/bus/schedule', busScheduleRoute);
 app.use('/bus/layout', busLayoutRoute); // Note: busRoute handles layout as well
-app.use('/payment',paymentRoute)
-app.use('/bus/seat',busSeatRoute)
-app.use('/ticket',ticketRouter);
+app.use('/payment', paymentRoute)
+app.use('/bus/seat', busSeatRoute)
+app.use('/ticket', ticketRouter);
 
 app.listen(port, "0.0.0.0", () => {
-  console.log(`🚀 Server running on http://127.0.0.1:${port}`);
+  console.log(`🚀 Server running on http://0.0.0.0:${port}`);
 });
