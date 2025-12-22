@@ -160,7 +160,7 @@ model PromoUsage {
 model Ticket {
   id        Int      @id @default(autoincrement())
   bookingId Int
-  qrCode    String?
+  // qrCode    String?
   issuedAt  DateTime @default(now())
   booking   Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
 }

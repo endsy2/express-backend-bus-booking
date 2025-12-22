@@ -89,6 +89,12 @@ export const insertPayment = async (req, res) => {
         id:bookingId
       }
     })
+    await prisma.ticket.create({
+      data:{
+        bookingId:bookingId,
+        issuedAt:new Date()
+      }
+    })
 
     // 3. Return success response
     return res.status(201).json({

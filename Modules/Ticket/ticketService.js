@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import dayjs from "dayjs";
 const prisma = new PrismaClient();
 
 export const TicketByUserPending=async(req,res)=>{
@@ -34,7 +35,7 @@ export const TicketByUserPast=async(req,res)=>{
 export const getTicketDetails=async(req,res)=>{
     try {
         
-        const ticketId=parseInt(req.params.id);
+        const ticketId=Number(req.params.id);
         const ticket=await prisma.ticket.findUnique({
             where:{id:ticketId},
             include:{
