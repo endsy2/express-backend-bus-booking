@@ -63,14 +63,47 @@ const prisma = new PrismaClient();
 export const insertPayment = async (req, res) => {
   try {
     const { bookingId, amount, method, transaction_id, status, paidAt } = req.body;
-    console.log("here");
-    
-    // 1. Validate required fields (optional but recommended)
-    if (!bookingId || !amount || !method || !transaction_id || !status || !paidAt) {
+
+    if (
+      !bookingId ||
+      amount === undefined ||
+      !method ||
+      !transaction_id ||
+      !status ||
+      !paidAt
+    ) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
-    // 2. Insert into database
+    const schedule = await prisma.booking.findUnique({
+      where: { id: bookingId },
+      include:{
+        schedule:{
+          select:{
+            id:true,
+            departureDate:true,
+            departureTime:true
+          }
+        }
+      }
+    });
+    console.log(schedule.schedule.id);
+    
+    console.log(schedule.schedule.departureTime);
+    console.log(schedule.schedule.departureDate);
+    
+    
+
+    const date = new Date(schedule.schedule.departureDate);
+const time = schedule.schedule.departureTime;
+
+const [hours, minutes, seconds = 0] = time.split(":").map(Number);
+date.setHours(hours, minutes, seconds, 0);
+
+const departureDateTime = date;
+
+    
+
     const payment = await prisma.payment.create({
       data: {
         bookingId,
@@ -78,25 +111,22 @@ export const insertPayment = async (req, res) => {
         method,
         transactionId: transaction_id,
         status,
-        paidAt: new Date(paidAt) // ensure it's a Date object
+        paidAt: new Date(paidAt),
       },
     });
-    await prisma.booking.update({
-      data:{
-        paymentStatus:"PAID"
-      },
-      where:{
-        id:bookingId
-      }
-    })
-    await prisma.ticket.create({
-      data:{
-        bookingId:bookingId,
-        issuedAt:new Date()
-      }
-    })
 
-    // 3. Return success response
+    await prisma.booking.update({
+      where: { id: bookingId },
+      data: { paymentStatus: "PAID" },
+    });
+
+    await prisma.ticket.create({
+      data: {
+        bookingId,
+        issuedAt: departureDateTime,
+      },
+    });
+
     return res.status(201).json({
       message: "Payment inserted successfully",
       payment,

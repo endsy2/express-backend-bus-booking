@@ -73,8 +73,8 @@ model BusSchedule {
   busId         Int
   price         Float?
   departureDate DateTime?
-  arrivalTime   DateTime?
-  departureTime DateTime?
+  arrivalTime   String?
+  departureTime String?
   bookings      Booking[]
   bus           Bus       @relation(fields: [busId], references: [id], onDelete: Cascade)
 }

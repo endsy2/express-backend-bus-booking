@@ -66,6 +66,8 @@ export const getTicketDetails=async(req,res)=>{
 }
 export const getTicket = async (req, res) => {
   const userId = req.user?.id;
+  console.log("userID:"+userId);
+  
   const { type } = req.query;
 
   let dateFilter = {};
