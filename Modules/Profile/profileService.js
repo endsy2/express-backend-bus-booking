@@ -1,24 +1,24 @@
 import { PrismaClient } from "@prisma/client";
 import dayjs from "dayjs";
 
-const prisma=new PrismaClient();
+const prisma = new PrismaClient();
 
 
-export const getProfile=async(req,res)=>{
-    try {
-        const userId=req.user.id;
-        const profile=await prisma.user.findUnique({
-            where:{id:userId}
-        })
-        if(!profile){
-            return res.status(404).json({error:"Profile not found"})
-        }
-        res.status(200).json({data: profile})
-    } catch (error) {
-        res.status(500).json({error:"Failed to fetch profile"})
+export const getProfile = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const profile = await prisma.user.findUnique({
+      where: { id: userId }
+    })
+    if (!profile) {
+      return res.status(404).json({ error: "Profile not found" })
     }
+    res.status(200).json({ data: profile })
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch profile" })
+  }
 }
-export const updateProfile = async (req, res) => {
+  export const updateProfile = async (req, res) => {
   try {
     const userId = req.user?.id;
     if (!userId) {

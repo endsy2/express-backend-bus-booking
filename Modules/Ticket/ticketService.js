@@ -109,7 +109,13 @@ export const getTicket = async (req, res) => {
                 bus: {
                   select: {
                     busType: true,
-                    busNumber: true
+                    busNumber: true,
+                    route:{
+                      select:{
+                        origin:true,
+                        destination:true
+                      }
+                    }
                   }
                 }
               }
