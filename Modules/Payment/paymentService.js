@@ -86,21 +86,15 @@ export const insertPayment = async (req, res) => {
           }
         }
       }
-    });
-    console.log(schedule.schedule.id);
-    
-    console.log(schedule.schedule.departureTime);
-    console.log(schedule.schedule.departureDate);
-    
-    
+    });  
 
     const date = new Date(schedule.schedule.departureDate);
-const time = schedule.schedule.departureTime;
+    const time = schedule.schedule.departureTime;
 
-const [hours, minutes, seconds = 0] = time.split(":").map(Number);
-date.setHours(hours, minutes, seconds, 0);
+    const [hours, minutes, seconds = 0] = time.split(":").map(Number);
+    date.setHours(hours, minutes, seconds, 0);
 
-const departureDateTime = date;
+    const departureDateTime = date;
 
     
 

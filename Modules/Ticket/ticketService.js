@@ -65,41 +65,102 @@ export const getTicketDetails=async(req,res)=>{
     }
 }
 export const getTicket = async (req, res) => {
-  const userId = req.user?.id;
-  console.log("userID:"+userId);
-  
-  const { type } = req.query;
+  try {
+    const userId = req.user?.id;
+    const { type } = req.query;
 
-  let dateFilter = {};
-
-  if (type === "pass") {
-    dateFilter = { lt: dayjs().toDate() };
-  } else {
-    dateFilter = { gte: dayjs().toDate() };
-  }
-
-  const tickets = await prisma.ticket.findMany({
-    where: {
-      issuedAt: dateFilter,
-      booking: {
-        userId: userId    
-      }
-    },
-    include: {
-      booking: {
-        select: {
-          paymentStatus: true,
-          bookingStatus: true
-        }
-      }
+    if (!userId) {
+      return res.status(401).json({ message: "Unauthorized" });
     }
-  });
 
-  if (!tickets || tickets.length === 0) {
-    return res.status(404).json({ message: "No tickets found" });
+    // 🔹 Date filter
+    const dateFilter =
+      type === "pass"
+        ? { lt: dayjs().toDate() }
+        : { gte: dayjs().toDate() };
+
+    // 🔹 Get user info
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        fullName: true
+      }
+    });
+
+    // 🔹 Get tickets
+    const tickets = await prisma.ticket.findMany({
+      where: {
+        issuedAt: dateFilter,
+        booking: {
+          userId
+        }
+      },
+      select: {
+        id: true,
+        issuedAt: true,
+        booking: {
+          select: {
+            id: true,
+            paymentStatus: true,
+            bookingStatus: true,
+            _count: {
+              select: {
+                bookingSeats: true
+              }
+            },
+            schedule: {
+              select: {
+                bus: {
+                  select: {
+                    busType: true,
+                    busNumber: true
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      orderBy: {
+        issuedAt: "desc"
+      }
+    });
+
+    if (!tickets.length) {
+      return res.status(404).json({
+        message: "No tickets found"
+      });
+    }
+
+    // 🔹 Format response (rename seat count)
+    const formattedTickets = tickets.map(ticket => {
+      const { _count, ...booking } = ticket.booking;
+
+      return {
+       
+          id: ticket.id,
+          issuedAt: ticket.issuedAt,
+          booking: {
+            ...booking,
+            seatCount: _count.bookingSeats
+          }
+        
+      };
+    });
+
+    return res.status(200).json({
+      data:{
+      user,
+      totalTickets: formattedTickets.length,
+      data: formattedTickets
+      }
+    });
+
+  } catch (error) {
+    console.error("Get Ticket Error:", error);
+    return res.status(500).json({
+      message: "Internal server error"
+    });
   }
-
-  return res.status(200).json({
-    data: tickets,
-  });
 };
