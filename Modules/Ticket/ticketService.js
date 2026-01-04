@@ -81,12 +81,7 @@ export const getTicket = async (req, res) => {
 
     // 🔹 Get user info
     const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: {
-        id: true,
-        fullName: true
-      }
-    });
+      where: { id: userId }});
 
     // 🔹 Get tickets
     const tickets = await prisma.ticket.findMany({

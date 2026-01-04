@@ -25,19 +25,39 @@ export const updateProfile = async (req, res) => {
       return res.status(400).json({ error: "User ID missing" });
     }
 
-    const image = req.file ? req.file.path : null;
-    const { fullname, phone, address } = req.body;
+    const { fullName, phone, email } = req.body;
+    const image = req.file?.path;
 
-    const updatedProfile = await prisma.user.upsert({
+    
+    const data = {};
+    if (fullName !== undefined) data.fullName = fullName;
+    if (phone !== undefined) data.phone = phone;
+    if (email !== undefined) data.email = email;
+    if (image !== undefined) data.image = image;
+
+    if (Object.keys(data).length === 0) {
+      return res.status(400).json({ error: "No fields to update" });
+    }
+
+    const updatedProfile = await prisma.user.update({
       where: { id: userId },
-      update: { fullname, phone, address, image },
-      create: { id: userId, fullname, phone, address, image }, 
+      data,
     });
 
-    return res.status(200).json({data: { message: "Profile Updated", profile: updatedProfile }});
+    return res.status(200).json({
+      message: "Profile updated",
+      profile: updatedProfile,
+    });
   } catch (error) {
     console.error("Error updating profile:", error);
-    return res.status(500).json({ error: "Failed To Update Profile" });
+
+    // User not found
+    if (error.code === "P2025") {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    return res.status(500).json({ error: "Failed to update profile" });
   }
 };
+
 
