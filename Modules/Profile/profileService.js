@@ -46,7 +46,7 @@ export const getProfile = async (req, res) => {
 
     return res.status(200).json({
       message: "Profile updated",
-      profile: updatedProfile,
+      data: updatedProfile,ø
     });
   } catch (error) {
     console.error("Error updating profile:", error);
