@@ -18,7 +18,7 @@ export const getProfile = async (req, res) => {
     res.status(500).json({ error: "Failed to fetch profile" })
   }
 }
-  export const updateProfile = async (req, res) => {
+export const updateProfile = async (req, res) => {
   try {
     const userId = req.user?.id;
     if (!userId) {
@@ -28,7 +28,7 @@ export const getProfile = async (req, res) => {
     const { fullName, phone, email } = req.body;
     const image = req.file?.path;
 
-    
+
     const data = {};
     if (fullName !== undefined) data.fullName = fullName;
     if (phone !== undefined) data.phone = phone;
@@ -46,7 +46,7 @@ export const getProfile = async (req, res) => {
 
     return res.status(200).json({
       message: "Profile updated",
-      data: updatedProfile,ø
+      data: updatedProfile,
     });
   } catch (error) {
     console.error("Error updating profile:", error);
